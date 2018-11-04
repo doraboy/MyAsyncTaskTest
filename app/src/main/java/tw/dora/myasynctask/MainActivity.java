@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class MyAsyncTask extends AsyncTask<String,Bitmap,Void>{
+    private class MyAsyncTask extends AsyncTask<String,Bitmap,String>{
         private int index = 0;
         @Override
         protected void onPreExecute() {
@@ -55,12 +55,18 @@ public class MainActivity extends AppCompatActivity {
             Log.v("brad","onPreExecute");
         }
 
+        //這裡單純在背景執行
         @Override
-        protected Void doInBackground(String... urls) {
+        protected String doInBackground(String... urls) {
             Log.v("brad","doInBackground");
             String ret ="OK";
             for(String url:urls){
                 Log.v("brad",url);
+                if(myAsyncTask.isCancelled())
+                {
+                    ret = "cancelled";
+                    return ret;
+                }
 
                 try {
                     URL imgurl = new URL(url);
@@ -69,16 +75,16 @@ public class MainActivity extends AppCompatActivity {
                     publishProgress(bmp);
                 } catch (Exception e) {
                     Log.v("brad",e.toString());
-                    ret = "canceled";
+                    ret = "Exception";
                     break;
                 }
 
 
             }
-            return null;
+            return ret;
         }
 
-        //這裡可秀前景
+        //這裡可秀前景,呈現在UI
         @Override
         protected void onProgressUpdate(Bitmap... bmps) {
             super.onProgressUpdate(bmps);
@@ -87,21 +93,22 @@ public class MainActivity extends AppCompatActivity {
             index++;
         }
 
-        //這裡可秀前景
+        //這裡可秀前景,呈現在UI
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(String mesg) {
+            super.onPostExecute(mesg);
             Log.v("brad","onPostExecute");
             new AlertDialog.Builder(MainActivity.this)
                     .setMessage("秀完圖片了")
+                    .setPositiveButton("OK",null)
                     .show();
 
         }
 
         @Override
-        protected void onCancelled(Void aVoid) {
-            super.onCancelled(aVoid);
-            Log.v("brad","onCancelled(Void aVoid)");
+        protected void onCancelled(String mesg) {
+            super.onCancelled(mesg);
+            Log.v("brad","onCancelled:"+mesg);
         }
 
         @Override
